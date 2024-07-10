@@ -1,0 +1,22 @@
+[
+  {
+    "nombre": "Santo oficio",
+    "fecha": "2024-06-30",
+    "fechaVencimiento": "2024-07-09",
+    "correo": "manuelhuenuqueovidal@hotmail.com",
+    "advertido": true
+  },
+  {
+    "nombre": "El Lugar",
+    "fecha": "2024-06-30",
+    "fechaVencimiento": "2024-07-09",
+    "correo": "manuelhuenuqueovidal@hotmail.com",
+    "advertido": true
+  },
+  {
+    "nombre": "Crónicas de motel",
+    "fecha": "2024-06-29",
+    "fechaVencimiento": "2024-07-08",
+    "correo": "manuelhuenuqueovidal@hotmail.com"
+  }
+]

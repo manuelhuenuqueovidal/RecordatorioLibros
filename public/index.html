@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  <title>Recordatorio de libros</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"
+    integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+    integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+    integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+    crossorigin="anonymous"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+  <link rel="stylesheet" href="/assets/css/estilos.css">
+  <link rel="shortcut icon" href="/assets/img/libro.png" type="image/x-icon">
+</head>
+
+<body>
+  <!-- Formulario -->
+  <div class="container">
+    <h1>Libros</h1>
+    <div class="border rounded p-4">
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Nombre</label>
+        <div class="col-sm-10">
+          <input id="nombre" type="text" class="form-control" name="nombre" placeholder="Escribe tu libro" />
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Correo</label>
+        <div class="col-sm-10">
+          <input id="correo" type="email" class="form-control" name="correo" placeholder="ejemplo@ejemplo.com"/>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Fecha</label>
+        <div class="col-sm-10">
+          <input id="fecha" type="text" class="form-control" name="fecha" placeholder="01/01/2000" />
+        </div>
+      </div>
+      <button class="btn btn-info" onclick="agregar()">Agregar</button>
+    </div>
+  </div>
+
+  <h5 class="text-center my-4">Tabla de Libros pedidos</h5>
+  <table class="table w-25 m-auto border">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Nombre</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Correo</th>
+      </tr>
+    </thead>
+    <tbody id="cuerpo"></tbody>
+  </table>
+
+  <script>
+    $(document).ready(function () {
+      getData()
+    });
+
+    // Función para ver todos los libros agregados.
+    function getData() {
+      $('#cuerpo').html('');
+      axios.get("/libros").then((data) => {
+        let libros = data.data.libros;
+        libros.forEach((l, i) => {
+          $('#cuerpo').append(`
+            <tr>
+              <th scope="row">${i + 1}</th>
+              <td>${l.nombre}</td>
+              <td>${l.fecha}</td>
+              <td>${l.correo}</td>
+              <td>
+                <button class="btn btn-warning" onclick='preEdit("${l.nombre}", "${l.fecha}", "${l.correo}")' data-toggle="modal" data-target="#exampleModal">Renovar</button>
+                <button class="btn btn-danger" onclick='eliminar("${l.nombre}")'>Eliminar</button>
+              </td>
+            </tr>
+          `);
+        });
+      });
+    }
+
+    function preEdit(nombre, fecha, correo) {
+      $('#nombreModal').val(nombre);
+      $('#fechaModal').val(fecha);
+      $('#correoModal').val(correo);
+    }
+
+    // Función para agregar datos.
+    function agregar() {
+      let nombre = $('#nombre').val();
+      let fecha = $('#fecha').val();
+      let correo = $('#correo').val();
+
+      // Validar fecha usando moment.js
+      if (!moment(fecha, 'DD/MM/YYYY', true).isValid()) {
+        alert('Fecha inválida');
+        return;
+      }
+
+      axios.get(`/agregar?nombre=${nombre}&fecha=${fecha}&correo=${correo}`).then((data) => {
+        alert(data.data);
+        getData();
+        $('#nombre').val('');
+        $('#fecha').val('');
+        $('#correo').val('');
+      });
+      $('#exampleModal').modal('hide');
+    }
+
+    // Función para editar.
+    function edit() {
+      let nombre = $('#nombreModal').val();
+      let fecha = $('#fechaModal').val();
+      let correo = $('#correoModal').val();
+
+      // Validar fecha usando moment.js
+      if (!moment(fecha, 'DD/MM/YYYY', true).isValid()) {
+        alert('Fecha inválida');
+        return;
+      }
+
+      axios.get(`/editar?nombre=${nombre}&fecha=${fecha}&correo=${correo}`).then((data) => {
+        alert(data.data);
+        getData();
+      });
+      $('#exampleModal').modal('hide');
+    }
+
+    // Función para eliminar.
+    function eliminar(nombre) {
+      axios.get(`/eliminar?nombre=${nombre}`).then((data) => {
+        alert(data.data);
+        getData();
+      });
+      $('#exampleModal').modal('hide');
+    }
+  </script>
+
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="rounded p-4">
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Nombre</label>
+            <div class="col-sm-10">
+              <input id="nombreModal" disabled type="text" class="form-control" name="nombre" />
+            </div>
+          </div>
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Fecha</label>
+            <div class="col-sm-10">
+              <input id="fechaModal" type="text" class="form-control" name="fecha" />
+            </div>
+          </div>
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Correo</label>
+            <div class="col-sm-10">
+              <input id="correoModal" type="email" class="form-control" name="correo" />
+            </div>
+          </div>
+          <button class="btn btn-warning" onclick="edit()">Renovar fecha</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
